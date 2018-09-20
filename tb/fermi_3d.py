@@ -5,6 +5,8 @@ Tight binding calculations for *d Fermi surface of LSCO
 follows the caluclations presented in *Three-Dimensional Fermi Surface of Overdoped 
 La-base Cuprates
 
+DOI:  https://doi.org/10.1103/PhysRevLett.121.077004
+
 
 
 TODO:
@@ -17,7 +19,7 @@ TODO:
 """
 __author__ = "kha"
 __version__ = "0.0.1"
-
+ 
 
 import time
 import numpy as np
@@ -131,17 +133,17 @@ LINE_DCT1 = {   # matplotlib.lines.Line2D
 
 
 
-# =====================================
+# ==============================================================================
 # TB - Exception
-# =====================================
+# ==============================================================================
 class TightBindingError(Exception):
     """ """
     pass
 
 
-# =====================================
+# ==============================================================================
 # TB - class
-# =====================================
+# ==============================================================================
 class BandStructure():
     """ """
     def __init__(self):
@@ -275,10 +277,99 @@ class TightBindingBS(BandStructure):
         ax.grid()
 
 
+# ==============================================================================
+# TB - new
+# ==============================================================================
 
-# =====================================
+class TightBindingModel(object):
+    """ """
+
+    def __init__(self, prm, kspace, tb_func=None, verbose=False):
+        """
+
+        TODO: implement test which check if prm kwargs match to kwargs of tb_func
+
+         """
+        super().__init__()
+
+        self.type = 'tb'
+        self.verbose = verbose
+        self.has_tb_func = False
+        self.E_calculated = False
+
+        self._init_kspace(prm, kspace)
+        self.prm = prm
+
+        if tb_func != None:
+            self.set_tb_model(tb_func)
+
+    def _init_kspace(self, prm, kspace):
+        """initializes kspace parameter"""
+        self.kspace = kspace
+        self.dim = len(self.kspace)
+        self.kspace = np.meshgrid(*self.kspace)
+
+    def set_tb_model(self, tb_func):
+        """sets tb_model and calls calc_tb function"""
+        self.tb_model = tb_func
+        self.has_tb_func = True
+        if self.E_calculated == False:
+            self.calc_E(verbose=self.verbose)
+
+
+    # calc energy
+    def _calc_E(self):
+        """private method to calc E by calling the tight-binding function"""
+        return self.tb_model(*self.kspace, **self.prm)
+
+    def calc_E(self, verbose=False):
+        """calculates tight binding Energy with self.tb_model"""
+
+        if self.has_tb_func == False:
+            raise TightBindingError(
+                'No tb_func defined yet. ' +
+                'Use set_tb_func(..) to set it first'
+            )
+
+        if verbose: 
+            print('calculate tight binding dset ...')
+            print('kspace dimension: ', self.kspace[0].shape)
+
+        self.E = self._calc_E()
+        self.E_calculated = True
+        if verbose: print('tight binding dset calculated.')
+
+
+    @staticmethod
+    def calc_dos(tb_dset, E_lst, E_step, verbose=False):
+        """calculates normalized DOS by using ``np.histogram`` """
+        dset_ = tb_dset.reshape(1, tb_dset.size)
+        E_bin = np.concatenate((np.array([E_lst[0]]),
+                                np.array(E_lst)+E_step/2.), axis=0)
+        dos, b = np.histogram(dset_, bins=E_bin)
+        return dos/np.sum(dos)
+
+
+   @staticmethod
+    def calc_dos_kz_average(tb_dset, E_lst, E_step, verbose=False):
+        """calc DOS by averaging over kz and summing over 2D iso-energy surface"""
+        if len(tb_dset.shape) != 3:
+            raise TightBindingError("tb_dset dimension need to be 3!")
+        
+        dos_lst = []       # fill with DOS for every kz value
+        for idx in range(tb_dset.shape[2]):
+            if verbose: print('    ', end='')
+            dos = TightBindingBS.calc_dos(tb_dset[:,:,idx], E_lst, E_step, verbose=verbose)
+            dos_lst.append(dos)
+        if verbose: print('idx: {:d}'.format(idx))
+        return np.mean(dos_lst, axis=0)
+
+
+
+
+# ==============================================================================
 # main
-# =====================================
+# ==============================================================================
 if __name__ == "__main__":
 #    if 'tb1' not in locals().keys():
 #        tb1 = TightBindingBS(lsco_prm, tb_func=e_3d)
