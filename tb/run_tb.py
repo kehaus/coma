@@ -105,10 +105,6 @@ tb2_4_xx = [trapz(tb2_4.dos[:idx]) for idx in range(len(tb2_4.dos))]
 
 
 
-
-
-
-
 # Sr2Ru4O7 TB model
 
 def e_Sr2Ru4O7(ky, kx, t_1, t_2, t_3, t_4, t_5, t_6, mu, lam):

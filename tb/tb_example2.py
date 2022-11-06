@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """ 
-Simple usage example of tight binding class
+Simple usage example of tight binding class with 3d next nearst neighbor hopping
 
 
 """
@@ -20,7 +20,7 @@ import numpy as np
 import tight_binding_model
 
 
-from tb_functions import e_simple_2d
+from tb_functions import e_simple
 
 TightBindingModel = tight_binding_model.TightBindingModel
 
@@ -28,10 +28,10 @@ TightBindingModel = tight_binding_model.TightBindingModel
 # ==============================================================================
 #  kspace settings
 # ==============================================================================
-kx = np.linspace(-0.5, 0.5, 401)*np.pi
-ky = np.linspace(-0.5, 0.5, 401)*np.pi
-#kz = np.linspace(-1.5, 1.0, 81)*np.pi
-kspace = [kx, ky]
+kx = np.linspace(-0.3, 0.3, 101)*np.pi
+ky = np.linspace(-0.3, 0.3, 101)*np.pi
+kz = np.linspace(-0.3, 0.3, 101)*np.pi
+kspace = [kx, ky, kz]
 
 
 # ==============================================================================
@@ -54,13 +54,13 @@ E_lst = np.linspace(E_min, E_max, 101)
 # ==============================================================================
 #  tb object
 # ==============================================================================
-tb = TightBindingModel(simple_prm, kspace, tb_func=e_simple_2d, verbose=True)
+tb = TightBindingModel(simple_prm, kspace, tb_func=e_simple, verbose=True)
 tb.calculate_dos(E_lst)
-#tb._plot_dos()
-
-tb.plot_BS(tb.kspace, tb.E)
 
 
-# from mayavi import mlab
+tb.plot_iso_surface()
 
-# mlab.mesh(*tb.kspace, tb.E)
+from mayavi import mlab
+
+
+

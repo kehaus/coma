@@ -241,6 +241,29 @@ class TightBindingEnergyPlot(TightBindingBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+
+    def plot_iso_surface(self):
+        """ """
+
+
+        E_val = 0
+        src = mlab.pipeline.scalar_field(self.E)
+        mlab.pipeline.iso_surface(src, contours=[E_val])
+
+        x = mlab.axes(
+        	    color=(0.0, 0.0, 0.0),nb_labels=3, 
+        	    xlabel='kx', ylabel='ky', zlabel='kz',
+        	    x_axis_visibility=True, y_axis_visibility=True, 
+        	    z_axis_visibility=True, 
+        	    ranges=[-1, 1, -1, 1, -1 ,1]
+        	)
+
+        mlab.show()
+
+
+
+
+
     @staticmethod
     def plot_BS(kspace, E_dset, num=2, figsize=(8,6), ax_dct=None, surf_dct=None, 
     				verbose=False):
